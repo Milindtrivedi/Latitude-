@@ -1,88 +1,91 @@
-    func sendMessage(indexRow:Int, type:String) {
-        let arrResultData                       = self.getArrData()
-        var phone_number                        = ""
-        var name                                = ""
-        var address                             = ""
-        var phone_office                        = ""
-        var phone_mobile                        = ""
-        var assign_user                         = ""
-        var account_name                        = ""
-        var animDictionary:[String:String]      = [:]
-        var allDictArray                        = [[String:String]]()
-        var arrayofDict                         = [[String: String]]()
-        var finalname                           = ""
-        var finalnumber                         = ""
-        var finallabel                          = ""
-        var finalmodule                         = ""
-        myDict                                  = arrResultData[indexRow]
+ func sendMessage(indexRow:Int, type:String) {
+        let arrResultData = self.getArrData()
+        var phone_number = ""
+        var name = ""
+        var address = ""
+        var phone_office = ""
+        var phone_mobile = ""
+        var assign_user = ""
+        var account_name = ""
+        var finalname = ""
+        var finalnumber = ""
+        var finallabel = ""
+        var finalmodule = ""
+        var animDictionary:[String:String] = [:]
+        var allDictArray = [[String:String]]()
+        var arrayofDict = [[String: String]]()
+        var normalCharCase: Bool = false
+        var specialCharCase: Bool = false
+        var hideAlertView: Bool = false
         
-            let phoneFieldarr = UserDefaults.standard.stringArray(forKey: "arr") ?? [String]()
-            animDictionary = ["name": "", "number": "","module": ""]
-                for fields in phoneFieldarr {
-                    if let numb = myDict[fields] {
-                        if !numb.isEmpty && (numb != ""){
-                            animDictionary["number"] = numb
-                            animDictionary["module"] = self.moduleService.getModuleLabel(module_name: self.module_name)
-                            let filteredDefs = allDef.filter{$0.field_name == fields}.first
-                            someDef.append(filteredDefs!)
-                            for items in someDef {
-                                if items.field_name == fields {
-                                    krr.append(items.label!)
-                                    animDictionary["label"] = items.label!
-                                    break
-                                }
-                            }
-                            for (_,values) in myDict {
-                                if values == numb {
-                                    animDictionary["name"] = (myDict["name"]!)
-                                    break
-                                }
-                            }
-                            allDictArray.append(animDictionary)
-                            allDictArray = allDictArray.filter {!$0.values.contains("")}
+        myDict = arrResultData[indexRow]
+        let phoneFieldarr = UserDefaults.standard.stringArray(forKey: "arr") ?? [String]()
+        animDictionary = ["name": "", "number": "","module": ""]
+        for fields in phoneFieldarr {
+            if let numb = myDict[fields] {
+                if !numb.isEmpty && (numb != ""){
+                    animDictionary["number"] = numb
+                    animDictionary["module"] = self.moduleService.getModuleLabel(module_name: self.module_name)
+                    let filteredDefs = allDef.filter{$0.field_name == fields}.first
+                    someDef.append(filteredDefs!)
+                    for items in someDef {
+                        if items.field_name == fields {
+                            krr.append(items.label!)
+                            animDictionary["label"] = items.label!
+                            break
                         }
                     }
-                }
-                for items in allDictArray {
-                    for (key,value) in items {
-                        if key == "name" {
-                            finalname = value
-                        } else if key == "number" {
-                            finalnumber = value
-                        } else if key == "label" {
-                            finallabel = value
-                        } else if key == "module" {
-                            finalmodule = value
+                    for (_,values) in myDict {
+                        if values == numb {
+                            animDictionary["name"] = (myDict["name"]!)
+                            break
                         }
                     }
-                    let dict = [finallabel : finalnumber] as [String : Any]
-                    arrayofDict.append(dict as! [String : String])
+                    allDictArray.append(animDictionary)
+                    allDictArray = allDictArray.filter {!$0.values.contains("")}
                 }
-        
+            }
+        }
+        for items in allDictArray {
+            for (key,value) in items {
+                if key == "name" {
+                    finalname = value
+                } else if key == "number" {
+                    finalnumber = value
+                } else if key == "label" {
+                    finallabel = value
+                } else if key == "module" {
+                    finalmodule = value
+                }
+            }
+            let dict = [finallabel : finalnumber] as [String : Any]
+            arrayofDict.append(dict as! [String : String])
+        }
         let alertController = UIAlertController(title: Constant.PopupTitle.kChooseNoToMsg, message: nil, preferredStyle: .alert)
-        var flag: Bool = false
         var n : UInt = 0
         for items in arrayofDict {
             for (key,values) in items {
                 print("------->", key,values)
                 let valueString: String = values
-                let characterset = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-                    if valueString.rangeOfCharacter(from: characterset.inverted) == nil {
+                let characterset = CharacterSet(charactersIn: "0123456789+-")
+                if valueString.rangeOfCharacter(from: characterset.inverted) == nil {
+                    normalCharCase = true
                     let Actionone = UIAlertAction(title: "\(key) : \(values)", style: UIAlertActionStyle.default) {
-                    UIAlertAction in
+                        UIAlertAction in
+                        print("\(key)","<------key1","\(values)","<---------values1")
                         if (self.module_name == ModuleKeys.kAccounts) {
-                        phone_number = values
-                        name = arrResultData[indexRow]["name"] ?? ""
-                        address = Utilities.combineAddress(address_street: arrResultData[indexRow]["billing_address_street"]!, address_city: arrResultData[indexRow]["billing_address_city"]!, address_state: arrResultData[indexRow]["billing_address_state"]!, address_postalcode: arrResultData[indexRow]["billing_address_postalcode"]!, address_country: arrResultData[indexRow]["billing_address_country"]!)
-                        phone_office = phone_number
+                            phone_number = values
+                            name = arrResultData[indexRow]["name"] ?? ""
+                            address = Utilities.combineAddress(address_street: arrResultData[indexRow]["billing_address_street"]!, address_city: arrResultData[indexRow]["billing_address_city"]!, address_state: arrResultData[indexRow]["billing_address_state"]!, address_postalcode: arrResultData[indexRow]["billing_address_postalcode"]!, address_country: arrResultData[indexRow]["billing_address_country"]!)
+                            phone_office = phone_number
                         }
                         else if (self.module_name == ModuleKeys.kCalls) {
                             if (arrResultData[indexRow]["direction"] == "Inbound") {
                                 phone_number = arrResultData[indexRow]["enjay_call_source_number"] ?? ""
                             } else {
                                 phone_number = arrResultData[indexRow]["enjay_call_destination_number"] ?? ""
+                            }
                         }
-                    }
                         else if (self.module_name == ModuleKeys.kContacts || self.module_name == ModuleKeys.kLeads) {
                             phone_number = values
                             name = arrResultData[indexRow]["name"] ?? ""
@@ -91,8 +94,7 @@
                             phone_mobile = phone_number
                             assign_user = arrResultData[indexRow]["assigned_user_name"] ?? ""
                             account_name = arrResultData[indexRow]["account_name"] ?? ""
-                    }
-
+                        }
                         if (!phone_number.isEmpty) {
                             let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle:nil)
                             objSMSTemplateVC.module_name = self.module_name
@@ -108,33 +110,11 @@
                         }else{
                             Utilities.showAlertView(title: Constant.PopupTitle.kAppTitle, message: Constant.Message.kPhoneNotAvailable)
                         }
-                        
-                        if arrayofDict.count == 1 {
-                            print("NUMBERUNO")
-                        }
-
-                        if items.count == 1 {
-                            flag = true
-                            print("Milind>>>>>>>")
-                            let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle: nil)
-                            objSMSTemplateVC.module_name = self.module_name
-                            objSMSTemplateVC.msgType = type
-                            objSMSTemplateVC.phone_number = phone_number
-                            print("phone number",phone_number)
-                            objSMSTemplateVC.name = name
-                            objSMSTemplateVC.address = address
-                            objSMSTemplateVC.phone_office = phone_office
-                            print("phone  office",phone_office)
-                            objSMSTemplateVC.phone_mobile = phone_mobile
-                            print("phone  mobile",phone_mobile)
-                            objSMSTemplateVC.assign_user = assign_user
-                            objSMSTemplateVC.account_name = account_name
-                            self.present(objSMSTemplateVC, animated: true, completion: nil)
-                        }
-                        }
-                        alertController.addAction(Actionone)
-                            
-                 } else if valueString.rangeOfCharacter(from: characterset.inverted) != nil {
+                    }
+                    alertController.addAction(Actionone)
+                } else if valueString.rangeOfCharacter(from: characterset.inverted) != nil {
+                    specialCharCase = true
+                    normalCharCase = false
                     if valueString.contains(",") {
                         let fullPhoneArr = valueString.split{$0 == ","}.map(String.init)
                         let specialcharPhoneDict = MutableOrderedDictionary<AnyObject, AnyObject>()
@@ -144,12 +124,13 @@
                         }
                         for (key,values) in specialcharPhoneDict {
                             let numb = key as! String
-                            print(key,"<====keys",values, "<======values")
                             var val = removeSpecialCharsFromString(text: numb)
                             val = val.trimmingCharacters(in: .whitespaces)
                             val = val.replacingOccurrences(of: " ", with: "")
+                            dump(specialcharPhoneDict)
                             let Actiontwo = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
                                 UIAlertAction in
+                                print("\(values)","<------values2","\(val)","<---------val2")
                                 if (self.module_name == ModuleKeys.kAccounts) {
                                     phone_number = val
                                     name = arrResultData[indexRow]["name"] ?? ""
@@ -164,7 +145,7 @@
                                     }
                                 }
                                 else if (self.module_name == ModuleKeys.kContacts || self.module_name == ModuleKeys.kLeads) {
-                                    phone_number =  val
+                                    phone_number = val
                                     name = arrResultData[indexRow]["name"] ?? ""
                                     address = Utilities.combineAddress(address_street: arrResultData[indexRow]["primary_address_street"]!, address_city: arrResultData[indexRow]["primary_address_city"]!, address_state: arrResultData[indexRow]["primary_address_state"]!, address_postalcode: arrResultData[indexRow]["primary_address_postalcode"]!, address_country: arrResultData[indexRow]["primary_address_country"]!)
                                     phone_office = val
@@ -187,20 +168,26 @@
                                 }else{
                                     Utilities.showAlertView(title: Constant.PopupTitle.kAppTitle, message: Constant.Message.kPhoneNotAvailable)
                                 }
-                               if specialcharPhoneDict.count == 1 {
-                                    flag = true
+                            }
+                            for(val,_) in specialcharPhoneDict {
+                                let numb  = val as! String
+                                var value = removeSpecialCharsFromString(text: numb)
+                                value = value.trimmingCharacters(in: .whitespaces)
+                                value = value.replacingOccurrences(of: " ", with: "")
+                                if specialCharCase == true && specialcharPhoneDict.count > 0 && specialcharPhoneDict.count < 2 {
+                                    hideAlertView = true
                                     let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle: nil)
                                     objSMSTemplateVC.module_name = self.module_name
                                     objSMSTemplateVC.msgType = type
-                                    objSMSTemplateVC.phone_number = phone_number
+                                    objSMSTemplateVC.phone_number = value
                                     objSMSTemplateVC.name = name
                                     objSMSTemplateVC.address = address
-                                    objSMSTemplateVC.phone_office = phone_office
-                                    objSMSTemplateVC.phone_mobile = phone_mobile
+                                    objSMSTemplateVC.phone_office = value
+                                    objSMSTemplateVC.phone_mobile = value
                                     objSMSTemplateVC.assign_user = assign_user
                                     objSMSTemplateVC.account_name = account_name
                                     self.present(objSMSTemplateVC, animated: true, completion: nil)
-                            }
+                                }
                             }
                             alertController.addAction(Actiontwo)
                         }
@@ -224,12 +211,12 @@
                         }
                         for (key,values) in specialcharPhoneDict {
                             let numb = key as! String
-                             print(key,"<==||||==keys",values, "<====|||==values")
                             var val = removeSpecialCharsFromString(text: numb)
                             val = val.trimmingCharacters(in: .whitespaces)
                             val = val.replacingOccurrences(of: " ", with: "")
                             let Actionthree = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
                                 UIAlertAction in
+                                print("\(values)","<------values3","\(val)","<---------val3")
                                 if (self.module_name == ModuleKeys.kAccounts) {
                                     phone_number = val
                                     name = arrResultData[indexRow]["name"] ?? ""
@@ -244,7 +231,7 @@
                                     }
                                 }
                                 else if (self.module_name == ModuleKeys.kContacts || self.module_name == ModuleKeys.kLeads) {
-                                    phone_number =  val
+                                    phone_number = val
                                     name = arrResultData[indexRow]["name"] ?? ""
                                     address = Utilities.combineAddress(address_street: arrResultData[indexRow]["primary_address_street"]!, address_city: arrResultData[indexRow]["primary_address_city"]!, address_state: arrResultData[indexRow]["primary_address_state"]!, address_postalcode: arrResultData[indexRow]["primary_address_postalcode"]!, address_country: arrResultData[indexRow]["primary_address_country"]!)
                                     phone_office = val
@@ -252,7 +239,6 @@
                                     assign_user = arrResultData[indexRow]["assigned_user_name"] ?? ""
                                     account_name = arrResultData[indexRow]["account_name"] ?? ""
                                 }
-                                
                                 if (!phone_number.isEmpty) {
                                     let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle:nil)
                                     objSMSTemplateVC.module_name = self.module_name
@@ -268,29 +254,110 @@
                                 }else{
                                     Utilities.showAlertView(title: Constant.PopupTitle.kAppTitle, message: Constant.Message.kPhoneNotAvailable)
                                 }
-                            
-                                if specialcharPhoneDict.count == 1 {
-                                    flag = true
+                            }
+                            for(val,_) in specialcharPhoneDict {
+                                let numb  = val as! String
+                                var value = removeSpecialCharsFromString(text: numb)
+                                value = value.trimmingCharacters(in: .whitespaces)
+                                value = value.replacingOccurrences(of: " ", with: "")
+                                if specialCharCase == true && specialcharPhoneDict.count > 0 && specialcharPhoneDict.count < 2 {
+                                    hideAlertView = true
+                                    print("============>part2")
                                     let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle: nil)
                                     objSMSTemplateVC.module_name = self.module_name
                                     objSMSTemplateVC.msgType = type
-                                    objSMSTemplateVC.phone_number = phone_number
+                                    objSMSTemplateVC.phone_number = value
                                     objSMSTemplateVC.name = name
                                     objSMSTemplateVC.address = address
-                                    objSMSTemplateVC.phone_office = phone_office
-                                    objSMSTemplateVC.phone_mobile = phone_mobile
+                                    objSMSTemplateVC.phone_office = value
+                                    objSMSTemplateVC.phone_mobile = value
                                     objSMSTemplateVC.assign_user = assign_user
                                     objSMSTemplateVC.account_name = account_name
                                     self.present(objSMSTemplateVC, animated: true, completion: nil)
-                            }
+                                }
                             }
                             alertController.addAction(Actionthree)
                         }
+                    } else if valueString.contains("!")||valueString.contains("`")||valueString.contains("~")||valueString.contains("@")||valueString.contains("#")||valueString.contains("$")||valueString.contains("%")||valueString.contains("^")||valueString.contains("&")||valueString.contains("*")||valueString.contains("_")||valueString.contains("(")||valueString.contains(")")||valueString.contains(";")||valueString.contains(":")||valueString.contains("{")||valueString.contains("}")||valueString.contains("|")||valueString.contains("'")||valueString.contains("<")||valueString.contains(">")||valueString.contains("?")||valueString.contains(".")||valueString.contains(",")||valueString.contains("="){
+                        normalCharCase = true
+                        let numbers = valueString.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+                        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", numbers)
+                        let okAction = UIAlertAction(title: "\(key) : \(numbers)", style: UIAlertActionStyle.default) {
+                            UIAlertAction in
+                            if (self.module_name == ModuleKeys.kAccounts) {
+                                phone_number = numbers
+                                name = arrResultData[indexRow]["name"] ?? ""
+                                address = Utilities.combineAddress(address_street: arrResultData[indexRow]["billing_address_street"]!, address_city: arrResultData[indexRow]["billing_address_city"]!, address_state: arrResultData[indexRow]["billing_address_state"]!, address_postalcode: arrResultData[indexRow]["billing_address_postalcode"]!, address_country: arrResultData[indexRow]["billing_address_country"]!)
+                                phone_office = phone_number
+                            }
+                            else if (self.module_name == ModuleKeys.kCalls) {
+                                if (arrResultData[indexRow]["direction"] == "Inbound") {
+                                    phone_number = arrResultData[indexRow]["enjay_call_source_number"] ?? ""
+                                } else {
+                                    phone_number = arrResultData[indexRow]["enjay_call_destination_number"] ?? ""
+                                }
+                            }
+                            else if (self.module_name == ModuleKeys.kContacts || self.module_name == ModuleKeys.kLeads) {
+                                phone_number = numbers
+                                name = arrResultData[indexRow]["name"] ?? ""
+                                address = Utilities.combineAddress(address_street: arrResultData[indexRow]["primary_address_street"]!, address_city: arrResultData[indexRow]["primary_address_city"]!, address_state: arrResultData[indexRow]["primary_address_state"]!, address_postalcode: arrResultData[indexRow]["primary_address_postalcode"]!, address_country: arrResultData[indexRow]["primary_address_country"]!)
+                                phone_office = numbers
+                                phone_mobile = phone_number
+                                assign_user = arrResultData[indexRow]["assigned_user_name"] ?? ""
+                                account_name = arrResultData[indexRow]["account_name"] ?? ""
+                            }
+                            if (!phone_number.isEmpty) {
+                                let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle:nil)
+                                objSMSTemplateVC.module_name = self.module_name
+                                objSMSTemplateVC.msgType = type
+                                objSMSTemplateVC.phone_number = phone_number
+                                objSMSTemplateVC.name = name
+                                objSMSTemplateVC.address = address
+                                objSMSTemplateVC.phone_office = phone_office
+                                objSMSTemplateVC.phone_mobile = phone_mobile
+                                objSMSTemplateVC.assign_user = assign_user
+                                objSMSTemplateVC.account_name = account_name
+                                self.present(objSMSTemplateVC, animated: true, completion: nil)
+                            }else{
+                                Utilities.showAlertView(title: Constant.PopupTitle.kAppTitle, message: Constant.Message.kPhoneNotAvailable)
+                            }
+                        }
+                        alertController.addAction(okAction)
+                        if arrayofDict.count > 0 && arrayofDict.count < 2 {
+                            hideAlertView = true
+                            let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle: nil)
+                            objSMSTemplateVC.module_name = self.module_name
+                            objSMSTemplateVC.msgType = type
+                            objSMSTemplateVC.phone_number = numbers
+                            objSMSTemplateVC.name = name
+                            objSMSTemplateVC.address = address
+                            objSMSTemplateVC.phone_office = numbers
+                            objSMSTemplateVC.phone_mobile = numbers
+                            objSMSTemplateVC.assign_user = assign_user
+                            objSMSTemplateVC.account_name = account_name
+                            self.present(objSMSTemplateVC, animated: true, completion: nil)
+                        }
+                    }
+                }
+                
+                if normalCharCase == true {
+                    if arrayofDict.count > 0 && arrayofDict.count < 2 {
+                        hideAlertView = true
+                        let objSMSTemplateVC = SMSTemplateVC(nibName: "SMSTemplateVC", bundle: nil)
+                        objSMSTemplateVC.module_name = self.module_name
+                        objSMSTemplateVC.msgType = type
+                        objSMSTemplateVC.phone_number = values
+                        objSMSTemplateVC.name = name
+                        objSMSTemplateVC.address = address
+                        objSMSTemplateVC.phone_office = values
+                        objSMSTemplateVC.phone_mobile = values
+                        objSMSTemplateVC.assign_user = assign_user
+                        objSMSTemplateVC.account_name = account_name
+                        self.present(objSMSTemplateVC, animated: true, completion: nil)
                     }
                 }
             }
         }
-        
         if alertController.actions.isEmpty {
             alertController.title = Constant.Message.kPhoneNotAvailable
             alertController.message = ""
@@ -298,10 +365,12 @@
         } else {
             alertController.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
         }
-        
-        if flag == false {
-            print("||||||||||||||||flag condition||||||||||||||")
+
+        if hideAlertView == false {
             self.present(alertController, animated: true, completion: nil)
+        } else if hideAlertView == true {
+            print("Handle hideAlertView")
+            return
         }
         arr.removeAll()
         brr.removeAll()
@@ -310,5 +379,4 @@
         krr.removeAll()
         phoneDict.removeAll()
         orderedPhoneDict.removeAllObjects()
-        
     }
