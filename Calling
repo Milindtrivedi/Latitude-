@@ -1,4 +1,4 @@
-@objc func btnCallClicked(_ sender: Any, event: Any) {
+    @objc func btnCallClicked(_ sender: Any, event: Any) {
         let touches                             = (event as AnyObject).allTouches
         let touch                               = touches??.first
         let currentTouchPosition: CGPoint?      = touch?.location(in: tableView)
@@ -35,7 +35,7 @@
                 myDict = arrResultData[indexPath.row]
                 let phoneFieldarr = UserDefaults.standard.stringArray(forKey: "arr") ?? [String]()
                 animDictionary = ["name": "", "number": "","module": ""]
-                
+
                 for fields in phoneFieldarr {
                     if let numb = myDict[fields] {
                         if !numb.isEmpty && (numb != ""){
@@ -61,7 +61,7 @@
                         }
                     }
                 }
-                
+
                 for items in allDictArray {
                     for (key,value) in items {
                         if key == "name" {
@@ -77,88 +77,32 @@
                     let dict = [finallabel : finalnumber] as [String : Any]
                     arrayofDict.append(dict as! [String : String])
                 }
+
+            let alertController = UIAlertController(title: Constant.PopupTitle.kChooseNoToCall, message: nil, preferredStyle: .alert)
+            var n : UInt = 0
+            var flag: Bool = false
+            brr.removeAll()
+            for items in arrayofDict {
+            for (key,values) in items {
+                let valueString: String = values
+                let characterset = CharacterSet(charactersIn: "0123456789+-!`~@#$%^&*_();:{}|'<>?.=")
                 
-                let alertController = UIAlertController(title: Constant.PopupTitle.kChooseNoToCall, message: nil, preferredStyle: .alert)
-                var n : UInt = 0
-                var flag: Bool = false
-                brr.removeAll()
-                for items in arrayofDict {
-                    for (key,values) in items {
-                        let valueString: String = values
-                        let characterset = CharacterSet(charactersIn: "0123456789+- ")
-                        
-                        if valueString.rangeOfCharacter(from: characterset.inverted) != nil {
-                            
-                            if valueString.contains(",") {
-                                let fullPhoneArr = valueString.split{$0 == ","}.map(String.init)
-                                let specialcharPhoneDict = MutableOrderedDictionary<AnyObject, AnyObject>()
-                                for item in fullPhoneArr {
-                                    specialcharPhoneDict.insert(key as AnyObject, forKey: item as AnyObject, at: n)
-                                    n += n
-                                }
-                                for (key,values) in specialcharPhoneDict {
-                                    let numb = key as! String
-                                    var val = removeSpecialCharsFromString(text: numb)
-                                    val = val.trimmingCharacters(in: .whitespaces)
-                                    val = val.replacingOccurrences(of: " ", with: "")
-                                    let link:URL = URL(string: "tel:\(val)")!
-                                    let okAction = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
-                                        UIAlertAction in
-                                        if #available(iOS 10, *) {
-                                            application.open(link)
-                                        } else {
-                                            application.openURL(link)
-                                        }
-                                    }
-                                    
-                                    alertController.addAction(okAction)
-                                }
-                                
-                                
-                            } else if valueString.contains("/") || valueString.contains(" ") {
-                                
-                                
-                                do {
-                                    let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.phoneNumber.rawValue)
-                                    let numberOfMatches = detector.matches(in: valueString, range: NSRange(valueString.startIndex..., in: valueString))
-                                    for match in numberOfMatches {
-                                        if match.resultType == .phoneNumber, let number = match.phoneNumber {
-                                            brr.append(number)
-                                        }
-                                    }
-                                } catch {
-                                    print(error)
-                                }
-                                let specialcharPhoneDict = MutableOrderedDictionary<AnyObject, AnyObject>()
-                                
-                                for item in brr {
-                                    specialcharPhoneDict.insert(key as AnyObject, forKey: item as AnyObject, at: n)
-                                    n += n
-                                }
-                                
-                                for (key,values) in specialcharPhoneDict {
-                                    let numb = key as! String
-                                    var val = removeSpecialCharsFromString(text: numb)
-                                    val = val.trimmingCharacters(in: .whitespaces)
-                                    val = val.replacingOccurrences(of: " ", with: "")
-                                    let link:URL = URL(string: "tel:\(val)")!
-                                    let okAction = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
-                                        UIAlertAction in
-                                        if #available(iOS 10, *) {
-                                            application.open(link)
-                                        } else {
-                                            application.openURL(link)
-                                        }
-                                    }
-                                    
-                                    alertController.addAction(okAction)
-                                }
+                if valueString.rangeOfCharacter(from: characterset.inverted) != nil {
+
+                    if valueString.contains(",") {
+                        let fullPhoneArr = valueString.split{$0 == ","}.map(String.init)
+                        let specialcharPhoneDict = MutableOrderedDictionary<AnyObject, AnyObject>()
+                        for item in fullPhoneArr {
+                                specialcharPhoneDict.insert(key as AnyObject, forKey: item as AnyObject, at: n)
+                                n += n
                             }
-                            
-                        } else {
-                            
-                            let link:URL = URL(string: "tel:\(values)")!
-                            let okAction = UIAlertAction(title: "\(key) : \(values)", style: UIAlertActionStyle.default) {
+                        for (key,values) in specialcharPhoneDict {
+                            let numb = key as! String
+                            var val = removeSpecialCharsFromString(text: numb)
+                            val = val.trimmingCharacters(in: .whitespaces)
+                            val = val.replacingOccurrences(of: " ", with: "")
+                            let link:URL = URL(string: "tel:\(val)")!
+                            let okAction = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
                                 UIAlertAction in
                                 if #available(iOS 10, *) {
                                     application.open(link)
@@ -166,8 +110,7 @@
                                     application.openURL(link)
                                 }
                             }
-                            
-                            if arrayofDict.count == 1 {
+                            if specialcharPhoneDict.count > 0 && specialcharPhoneDict.count < 2 {
                                 if #available(iOS 10, *) {
                                     application.open(link)
                                     flag = true
@@ -179,28 +122,110 @@
                             
                             alertController.addAction(okAction)
                         }
+                     
+                        
+                    } else if valueString.contains("/") || valueString.contains(" ") {
+                    do {
+                        let detector = try NSDataDetector(types: NSTextCheckingResult.CheckingType.phoneNumber.rawValue)
+                        let numberOfMatches = detector.matches(in: valueString, range: NSRange(valueString.startIndex..., in: valueString))
+                        for match in numberOfMatches {
+                            if match.resultType == .phoneNumber, let number = match.phoneNumber {
+                               brr.append(number)
+                                }
+                            }
+                    } catch {
+                        print(error)
+                    }
+                    let specialcharPhoneDict = MutableOrderedDictionary<AnyObject, AnyObject>()
+
+                        for item in brr {
+                            specialcharPhoneDict.insert(key as AnyObject, forKey: item as AnyObject, at: n)
+                            n += n
+                        }
+
+                for (key,values) in specialcharPhoneDict {
+                    let numb = key as! String
+                    var val = removeSpecialCharsFromString(text: numb)
+                    val = val.trimmingCharacters(in: .whitespaces)
+                    val = val.replacingOccurrences(of: " ", with: "")
+                    let link:URL = URL(string: "tel:\(val)")!
+                    let okAction = UIAlertAction(title: "\(values) : \(val)", style: UIAlertActionStyle.default) {
+                        UIAlertAction in
+                        if #available(iOS 10, *) {
+                            application.open(link)
+                        } else {
+                            application.openURL(link)
+                        }
+                    }
+                    
+                    if specialcharPhoneDict.count > 0 && specialcharPhoneDict.count < 2 {
+                        if #available(iOS 10, *) {
+                            application.open(link)
+                            flag = true
+                        } else {
+                            application.openURL(link)
+                            flag = true
+                        }
+                    }
+                    alertController.addAction(okAction)
+                        }
+                    }
+                    
+                } else if valueString.contains("!")||valueString.contains("`")||valueString.contains("~")||valueString.contains("@")||valueString.contains("#")||valueString.contains("$")||valueString.contains("%")||valueString.contains("^")||valueString.contains("&")||valueString.contains("*")||valueString.contains("_")||valueString.contains("(")||valueString.contains(")")||valueString.contains(";")||valueString.contains(":")||valueString.contains("{")||valueString.contains("}")||valueString.contains("|")||valueString.contains("'")||valueString.contains("<")||valueString.contains(">")||valueString.contains("?")||valueString.contains(".")||valueString.contains(",")||valueString.contains("="){
+                    let numbers = valueString.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+                    let link:URL = URL(string: "tel:\(numbers)")!
+                    let okAction = UIAlertAction(title: "\(key) : \(numbers)", style: UIAlertActionStyle.default) {
+                        UIAlertAction in
+                        if #available(iOS 10, *) {
+                            application.open(link)
+                        } else {
+                            application.openURL(link)
+                        }
+                    }
+                    if arrayofDict.count > 0 && arrayofDict.count < 2 {
+                        if #available(iOS 10, *) {
+                            application.open(link)
+                            flag = true
+                        } else {
+                            application.openURL(link)
+                            flag = true
+                        }
+                    }
+                    alertController.addAction(okAction)
+                } else {
+                let link:URL = URL(string: "tel:\(values)")!
+                    let okAction = UIAlertAction(title: "\(key) : \(values)", style: UIAlertActionStyle.default) {
+                    UIAlertAction in
+                    if #available(iOS 10, *) {
+                        application.open(link)
+                    } else {
+                        application.openURL(link)
                     }
                 }
-                
-                if alertController.actions.isEmpty {
-                    alertController.title = Constant.Message.kPhoneNotAvailable
-                    alertController.message = ""
-                    alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                } else {
-                    alertController.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
+                if arrayofDict.count > 0 && arrayofDict.count < 2 {
+                    if #available(iOS 10, *) {
+                        application.open(link)
+                        flag = true
+                    } else {
+                        application.openURL(link)
+                        flag = true
+                    }
                 }
-                
-                if flag == false {
-                    self.present(alertController, animated: true, completion: nil)
+                alertController.addAction(okAction)
                 }
+            }
+        }
+            if alertController.actions.isEmpty {
+                alertController.title = Constant.Message.kPhoneNotAvailable
+                alertController.message = ""
+                alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            } else {
+                alertController.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
+            }
                 
-                arr.removeAll()
-                brr.removeAll()
-                dictionary.removeAll()
-                someDef.removeAll()
-                krr.removeAll()
-                phoneDict.removeAll()
-                orderedPhoneDict.removeAllObjects()
+            if flag == false {
+                self.present(alertController, animated: true, completion: nil)
+            }
             }
         }
     }
