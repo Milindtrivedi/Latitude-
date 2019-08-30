@@ -1,0 +1,13 @@
+func maxxInFamily (_ N : Int) -> Int {
+        
+        var number = N
+        var digits = [Int]()
+        
+        while number > 0 {
+            digits.insert(number % 10, at: 0)
+            number /= 10
+        }
+        
+        let arr = digits.sorted { ($0 > $1) }
+        return arr.reduce(0) { return ($0 * 10 + $1) }
+    }
