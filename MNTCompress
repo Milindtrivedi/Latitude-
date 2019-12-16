@@ -1,0 +1,397 @@
+//
+//  ImageProcessing.swift
+//  LogicView
+//
+//  Created by Milind on 11/12/19.
+//  Copyright © 2019 Milind Trivedi. All rights reserved.
+//
+
+import UIKit
+import Accelerate.vImage
+import AVFoundation
+
+@available(iOS 13.0, *)
+class ImageProcessing: UIViewController {
+    
+    @IBOutlet weak var imgView: UIImageView!
+    
+    @IBOutlet weak var resultimg: UIImageView!
+    
+    
+    
+    var bufferImg: UIImage?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad() /*
+         let testimage = UIImage(named: "testimg2")
+         imgView.image = testimage
+         print(testimage?.size)
+         
+         let uploadData = testimage!.pngData()
+         let array = [UInt8](uploadData!)
+         print("Image size in bytes:\(array.count)")
+         
+         let jpegData = testimage?.jpegData(compressionQuality: 1.0)
+         let jpegSize: Int = jpegData?.count ?? 0
+         print("size of jpeg image in KB: %f ", Double(jpegSize) / 1024.0)
+         
+         let strBase64 = jpegData!.base64EncodedString(options: .lineLength64Characters)
+         //print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",strBase64)
+         // dLog(strBase64)
+         //
+         let resultantImg = testimage?.resize(image: testimage!,percentage: 0.50)
+         print(resultantImg?.size)
+         
+         let uploadData1 = resultantImg!.pngData()
+         let array1 = [UInt8](uploadData1!)
+         print("Image size in bytes:\(array1.count)")
+         
+         let jpegData1 = resultantImg?.jpegData(compressionQuality: 1.0)
+         let jpegSize1: Int = jpegData1?.count ?? 0
+         print("size of jpeg image in KB: %f ", Double(jpegSize1) / 1024.0)
+         
+         let strBase642 = jpegData1!.base64EncodedString(options: .lineLength64Characters)
+         //print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",strBase642)
+         //dLog(strBase642)
+         resultimg.image = resultantImg
+         
+         */
+        ///
+        ///buffering method
+        ///
+        //MARK:- testimage
+        let imagename:String = "lit"
+        let testimage = UIImage(named: imagename)
+        bufferImg = testimage
+        
+        print(testimage!.size as Any,"<<<<<< Original Image")
+        let testdata = testimage?.jpegData(compressionQuality: 1.0)
+        print("   Test Image - \(imagename)","\n   Size: \(testdata?.prettySize ?? "") \n\n")
+        
+        var wechatcompressiontest : UIImage?//= testimage?.wxCompress()
+        wechatcompressiontest = testimage?.MNTCompress()
+        //
+        //        do {
+        //            let imgdata = try testimage?.heicData(compressionQuality: 0.5)//reImage.jpegData(compressionQuality: 0.5)!
+        //            wechatcompressiontest = UIImage.init(data: imgdata!)
+        //        } catch {
+        //            print("Compression failed")
+        //        }
+        //
+        print(wechatcompressiontest!.size as Any,"<<<<<< compression Image Resolution")
+        let testdata11 = wechatcompressiontest?.jpegData(compressionQuality: 1.0)
+        print("   Resultant Image - \(imagename)","\n   Size: \(testdata11?.prettySize ?? "") \n\n")
+        
+        
+        
+        
+        imgView.image = testimage
+        UIImageWriteToSavedPhotosAlbum(testimage!, nil, nil, nil)
+        UIImageWriteToSavedPhotosAlbum(wechatcompressiontest!, nil, nil, nil)
+        resultimg.image = wechatcompressiontest
+        
+        
+        
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        // choose a name for your image
+        let fileName = "milind.jpg"
+        // create the destination file url to save your image
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        // get your UIImage jpeg data representation and check if the destination file url already exists
+        let data = testdata11
+        if !FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                try data!.write(to: fileURL)
+                print("file saved")
+            } catch {
+                print("error saving file:", error)
+            }
+        } else {
+            do {
+                try  FileManager.default.removeItem(atPath: fileURL.path)
+            } catch {
+                print("the file exist ty again")
+            }
+            do {
+                try data!.write(to: fileURL)
+                print("file saved")
+            } catch {
+                print("error saving file:", error)
+            }
+        }
+        
+        
+        
+        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
+        let paths               = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        if let dirPath          = paths.first
+        {
+            let imageURL = URL(fileURLWithPath: dirPath).appendingPathComponent(fileName)
+            let image    = UIImage(contentsOfFile: imageURL.path)
+            let testdata11 = image?.jpegData(compressionQuality: 1.0)
+            print(image!.size as Any,"<<<<<< De compressed from file manager Image Resolution")
+            print("   FileManager Image - \(imagename)","\n   Size: \(testdata11?.prettySize ?? "") \n\n")
+            
+            
+            // Do whatever you want with the image
+        }
+        
+        //        let resultantImg = testimage?.resize(image: testimage!,percentage: 1.0)
+        //        bufferImg = testimage
+        //        print(resultantImg!.size as Any,"<<<<<< Lancoze reSIZEd image")
+        //        let jpegData1 = resultantImg?.jpegData(compressionQuality: 1.0)
+        //        let jpegSize1: Int = jpegData1?.count ?? 0
+        //        print("size of jpeg image in KB: >>>>>>>>>>", Double(jpegSize1) / 1024.0,"\n")
+        //        resultimg.image = wechatcompressiontest
+        //UIImageWriteToSavedPhotosAlbum(resultantImg!, nil, nil, nil)
+    }
+}
+
+
+//MARK:- Compression Method
+fileprivate extension UIImage {
+    
+    func MNTCompress() -> UIImage {
+        var imgdata: Data?
+        var compressedImg: UIImage?
+        
+        //
+        //        if self.size.width > 1280 && self.size.height > 1080 {
+        //
+        //                   let resizingImgFrame: CGSize = {
+        //                       guard
+        //                           let resizingImgFrame = self.resizestrictImage(image: self) else {
+        //                               fatalError("Unable to create frame from the compressed Image")
+        //                       }
+        //                       return resizingImgFrame
+        //                   }()
+        //
+        //                   let reSizedfromData = self.resize(size: resizingImgFrame)
+        //
+        //                   let reSizedImage: UIImage = {
+        //                       guard
+        //                           let reSizedImage = reSizedfromData else {
+        //                               fatalError("Unable to get resizedimage from the data")
+        //                       }
+        //                       return reSizedImage
+        //                   }()
+        //                   compressedImg = reSizedImage
+        //               }
+        //
+        //
+        //
+        //        let reFramedImage: UIImage = {
+        //                              guard
+        //                                  let reFramedImage = compressedImg else {
+        //                                     return self
+        //                              }
+        //                              return reFramedImage
+        //                          }()
+        //
+        //
+        //
+        //            do {
+        //                imgdata = try reFramedImage.heicData(compressionQuality: 0.5)
+        //            } catch {
+        //                print("Compression failed")
+        //
+        //            }
+        //
+        //            let ImgData: Data = {
+        //                guard
+        //                    let imagedata = imgdata else {
+        //                        fatalError("Unable to get compression data")
+        //                }
+        //                return imagedata
+        //            }()
+        //
+        //            let imgFromData: UIImage = {
+        //                guard
+        //                    let imgFromData = UIImage.init(data: ImgData) else {
+        //                        fatalError("Unable to create image from the Compression Data")
+        //                }
+        //                return imgFromData
+        //            }()
+        //            compressedImg = imgFromData
+        //
+        //
+        
+        
+        
+        //MARK:- Firstly applying filtering mask on raw image
+        
+        do {
+            imgdata = try self.heicData(compressionQuality: 0.5)
+        } catch {
+            print("Compression failed")
+        }
+        
+        let ImgData: Data = {
+            guard
+                let imagedata = imgdata else {
+                    fatalError("Unable to get compression data")
+            }
+            return imagedata
+        }()
+        
+        let imgFromData: UIImage = {
+            guard
+                let imgFromData = UIImage.init(data: ImgData) else {
+                    fatalError("Unable to create image from the Compression Data")
+            }
+            return imgFromData
+        }()
+        compressedImg = imgFromData
+        
+        //MARK:- Applying resizing mask over compressed image
+        
+        if self.size.width > 1280 && self.size.height > 1080 {
+            
+            let resizingImgFrame: CGSize = {
+                guard
+                    let resizingImgFrame = imgFromData.resizestrictImage(image: imgFromData) else {
+                        fatalError("Unable to create frame from the compressed Image")
+                }
+                return resizingImgFrame
+            }()
+            
+            let reSizedfromData = imgFromData.resize(size: resizingImgFrame)
+            
+            let reSizedImage: UIImage = {
+                guard
+                    let reSizedImage = reSizedfromData else {
+                        fatalError("Unable to get resizedimage from the data")
+                }
+                return reSizedImage
+            }()
+            compressedImg = reSizedImage
+        }
+        
+        let compressedImage: UIImage = {
+            guard
+                let compressedImage = compressedImg else {
+                    fatalError("Unable to create Compressedimage from the Compression Data")
+            }
+            return compressedImage
+        }()
+        return compressedImage
+    }
+    // MARK:- calculate frame
+    func resizestrictImage(image:UIImage) -> CGSize? {
+        
+        var actualHeight : CGFloat = image.size.height
+        var actualWidth  : CGFloat = image.size.width
+        let maxHeight    : CGFloat = 1080//2732.0//
+        let maxWidth     : CGFloat = 1920//2048.0//
+        var imgRatio     : CGFloat = actualWidth/actualHeight
+        let maxRatio     : CGFloat = maxWidth/maxHeight
+        
+        if (actualHeight > maxHeight || actualWidth > maxWidth){
+            if(imgRatio < maxRatio){
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight
+            }
+            else if(imgRatio > maxRatio){
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth
+            }
+            else{
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+            }
+        }
+        let cgsize = CGSize(width: actualWidth, height: actualHeight)
+        return cgsize
+    }
+    
+    // MARK:- Resize image
+    func resize(size: CGSize) -> UIImage? {
+        guard let cgImage = self.cgImage else { return nil }
+        
+        var format = vImage_CGImageFormat(bitsPerComponent: 8, bitsPerPixel: 32, colorSpace: nil,bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),version: 0, decode: nil, renderingIntent: CGColorRenderingIntent.defaultIntent)
+        var sourceBuffer = vImage_Buffer()
+        defer {
+            if #available(iOS 13.0, *) {
+                sourceBuffer.free()
+            } else {
+                sourceBuffer.data.deallocate()
+            }
+        }
+        
+        var error = vImageBuffer_InitWithCGImage(&sourceBuffer, &format, nil, cgImage, numericCast(kvImageNoFlags))
+        guard error == kvImageNoError else { return nil }
+        
+        // create a destination buffer
+        let scale = self.scale
+        let destWidth = Int(size.width)
+        let destHeight = Int(size.height)
+        let bytesPerPixel = cgImage.bitsPerPixel / 8
+        let destBytesPerRow = destWidth * bytesPerPixel
+        let destData = UnsafeMutablePointer<UInt8>.allocate(capacity: destHeight * destBytesPerRow)
+        defer {
+            destData.deallocate()
+        }
+        var destBuffer = vImage_Buffer(data: destData, height: vImagePixelCount(destHeight), width: vImagePixelCount(destWidth), rowBytes: destBytesPerRow)
+        
+        // scale the image
+        error = vImageScale_ARGB8888(&sourceBuffer, &destBuffer, nil, numericCast(kvImageHighQualityResampling))
+        guard error == kvImageNoError else { return nil }
+        
+        // create a CGImage from vImage_Buffer
+        guard let destCGImage = vImageCreateCGImageFromBuffer(&destBuffer, &format, nil, nil, numericCast(kvImageNoFlags), &error)?.takeRetainedValue() else { return nil}
+        guard error == kvImageNoError else { return nil }
+        
+        // create a UIImage
+        let resizedImage = UIImage(cgImage: destCGImage, scale: scale, orientation: self.imageOrientation)
+        return resizedImage
+    }
+    
+    // MARK:- HEIC COMPRESSION
+    enum HEICError: Error {
+        case heicNotSupported
+        case cgImageMissing
+        case couldNotFinalize
+    }
+    
+    func heicData(compressionQuality: CGFloat) throws -> Data? {
+        let data = NSMutableData()
+        guard let imageDestination =
+            CGImageDestinationCreateWithData(
+                data, AVFileType.jpg as CFString, 1, nil
+            )
+            else {
+                throw HEICError.heicNotSupported
+        }
+        
+        guard let cgImage = self.cgImage else {
+            throw HEICError.cgImageMissing
+        }
+        
+        let options: NSDictionary = [
+            kCGImageDestinationLossyCompressionQuality: compressionQuality
+        ]
+        
+        CGImageDestinationAddImage(imageDestination, cgImage, options)
+        guard CGImageDestinationFinalize(imageDestination) else {
+            throw HEICError.couldNotFinalize
+        }
+        
+        return data as Data
+    }
+    
+    
+}
+
+//MARK:- DATA
+extension Data {
+    var prettySize: String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .binary
+        return formatter.string(fromByteCount: Int64(count))
+    }
+}
